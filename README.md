@@ -6,22 +6,20 @@ Setup [Elasticsearch ELK Stack](http://www.elasticsearch.org/overview/) on Debia
 New [Kibana (v4)](https://github.com/elasticsearch/kibana) is installed by this role. Please check [kibana3](https://github.com/bakhti/ansible-elk/tree/kibana3) branch if you need to setup ELK with [previous](https://github.com/elasticsearch/kibana/tree/kibana3) version of Kibana.
 
 ## Changelog
-
 ### 26/10/2015
- 
  * Upgrade elasticsearch and logstash versions
  * Change config variables in dicts to independent to make overriding simple.
+ * Ability to supply TLS information.
  * Add support for log-courier input.
  * Add support for s3 output.
 
 ## Prerequisites
+ * Requires `monit` to monitor processes.
+ * Required `supervisord` to be installed (for Kibana). i.e.: [zenomaro.supervisord](https://galaxy.ansible.com/detail#/role/373/) 
 
-  * Requires `monit` to monitor processes.
-  * Required `supervisord` to be installed (for Kibana). i.e.: [zenomaro.supervisord](https://galaxy.ansible.com/detail#/role/373/) 
 ## Required Variables
- 
  * `elk_logstash_ssl_certificate` : SSL certificate used for the lumberjack and log-courier inputs.
- * `elk_logstash_ssl_key` : SSL key used for the lumberjack and courier inputs.
+ * `elk_logstash_ssl_key` : SSL key used for the lumberjack and log-courier inputs.
 
 For other customizable variables, inspect `defaults/main.yml`
 
