@@ -1,0 +1,57 @@
+input {
+
+ {% if elk_logstash_lumberjack_enabled %}
+ lumberjack {
+    port => {{ elk_logstash_lumberjack_port }}
+    ssl_certificate => "/etc/logstash/logstash-forwarder.crt"
+    ssl_key => "/etc/logstash/logstash-forwarder.key"
+    codec => plain {
+        charset => "ISO-8859-1"
+    }
+ }
+ {% endif %}
+
+ {% if elk_logstash_courier_enabled %}
+ courier {
+    port => {{ elk_logstash_courier_port }}
+    ssl_certificate => "/etc/logstash/logstash-forwarder.crt"
+    ssl_key => "/etc/logstash/logstash-forwarder.key"
+    transport => "tls"
+ }
+ {% endif %}
+
+}
+
+output {
+  elasticsearch {
+    cluster => "elasticsearch"
+  }
+
+  {% if elk_logstash_s3_enabled %}
+  s3 {
+     access_key_id => "{{ elk_logstash_s3_tokens.access_key_id }}"
+     secret_access_key => "{{ elk_logstash_s3_tokens.secret_access_key }}"
+     bucket => "{{ elk_logstash_s3_bucket }}"
+     region => "{{ elk_logstash_s3_region | default('us-east-1') }}"
+     prefix => "{{ elk_logstash_s3_folder | default('') }}"
+     restore => true
+     size_file => 2000000
+     time_file => 60
+
+  }
+  {% endif %}
+}
+
+filter {
+  if [type] == "syslog" {
+    grok {
+      match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+      add_field => [ "received_at", "%{@timestamp}" ]
+      add_field => [ "received_from", "%{host}" ]
+    }
+    syslog_pri { }
+    date {
+      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+    }
+  }
+}

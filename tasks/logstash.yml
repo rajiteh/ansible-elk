@@ -1,0 +1,76 @@
+---
+- name: Logstash apt repo
+  apt_repository:
+    repo="deb http://packages.elastic.co/logstash/{{ elk_logstash_version }}/{{ ansible_os_family|lower }} stable main"
+    update_cache=yes
+  when: ansible_os_family == 'Debian'
+  sudo: yes
+
+- name: Install logstash apt packages
+  apt: pkg={{ item }} update_cache=yes state=present
+  with_items:
+   - logstash
+  sudo: yes
+  when: ansible_os_family == 'Debian'
+  notify: Restart logstash
+
+- name: Logstash conf file
+  template:
+    src={{ item.src }}
+    dest=/etc/logstash/conf.d/{{ item.dest }}
+    owner=root group=root mode=644
+  with_items: elk_logstash_configs
+  sudo: yes
+  notify: Restart logstash
+
+- name: Logstash pattern files
+  template:
+    src={{ item.src }}
+    dest="{{ elk_logstash_install_dir }}/patterns/{{ item.dest }}"
+    owner=root group=root mode=644
+  with_items: elk_logstash_patterns
+  sudo: yes
+  when: elk_logstash_patterns is defined
+  notify: Restart logstash
+
+- name: Logstash installed plugins
+  command: bin/plugin list
+  args:
+    chdir: "{{ elk_logstash_install_dir }}"
+  register: elk_logstash_installed_plugins
+  changed_when: false
+
+- name: Configure log-courier
+  command: bin/plugin install {{ item }}
+  args:
+    chdir: "{{ elk_logstash_install_dir }}"
+  when: item not in elk_logstash_installed_plugins.stdout
+  with_items:
+    - logstash-output-zeromq
+    - logstash-input-courier
+  notify: Restart logstash
+
+- name: Logstash plugins
+  command: bin/plugin install {{ item }}
+  args:
+    chdir: "{{ elk_logstash_install_dir }}"
+  when: item not in elk_logstash_installed_plugins.stdout
+  with_items: elk_logstash_plugins
+  notify: Restart logstash
+
+- name: Logstash SSL certificates
+  template:
+    src={{ item.source }}
+    dest=/etc/logstash/{{ item.destination }}
+    owner=logstash group=logstash mode=600
+  with_items:
+    - { source: "logstash-forwarder.crt.j2", destination: "logstash-forwarder.crt" }
+    - { source: "logstash-forwarder.key.j2", destination: "logstash-forwarder.key" }
+
+- name: Make monit to look after Logstash
+  template:
+    src=logstash.monitrc.conf.j2
+    dest=/etc/monit/conf.d/logstash.monitrc.conf
+    owner=root group=root mode=644
+  sudo: yes
+  notify: Restart monit
