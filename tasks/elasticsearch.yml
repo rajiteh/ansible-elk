@@ -31,3 +31,6 @@
     owner=root group=root mode=644
   sudo: yes
   notify: Restart monit
+
+- name: ES enable service on boot
+  service: name=elasticsearch enabled=yes state=running

@@ -74,3 +74,6 @@
     owner=root group=root mode=644
   sudo: yes
   notify: Restart monit
+
+- name: Logstash enable service on boot
+  service: name=logstash enabled=yes state=running

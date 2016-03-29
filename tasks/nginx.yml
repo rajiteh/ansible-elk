@@ -33,3 +33,6 @@
     owner=root group=root mode=644
   sudo: yes
   notify: Restart monit
+
+- name: Nginx enable service on boot
+  service: name=nginx enabled=yes state=running
