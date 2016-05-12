@@ -17,7 +17,7 @@ elk_logstash_version: 2.3
 elk_logstash_pid_file: /var/run/logstash.pid
 elk_logstash_configs:
     - { src: logstash-server.conf.j2, dest: 01-server.conf }
-elk_logstash_extra_configs: [] # optional; dict with two keys. 'name' -> conf file name, 'config' -> config content
+elk_logstash_extra_configs: [] # optional; list of dicts with two keys. 'name' -> conf file name, 'config' -> content
 elk_logstash_patterns: [] # optional; follows same format as `configs`
 elk_logstash_lumberjack_enabled: yes
 elk_logstash_lumberjack_port: 4545

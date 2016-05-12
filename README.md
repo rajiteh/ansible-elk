@@ -24,8 +24,8 @@ New [Kibana (v4)](https://github.com/elasticsearch/kibana) is installed by this 
  * Required `supervisord` to be installed (for Kibana). i.e.: [zenomaro.supervisord](https://galaxy.ansible.com/detail#/role/373/) 
 
 ## Required Variables
- * `elk_logstash_ssl_certificate` : SSL certificate used for the lumberjack and log-courier inputs.
- * `elk_logstash_ssl_key` : SSL key used for the lumberjack and log-courier inputs.
+ * `elk_logstash_ssl_certificate` : SSL certificate used by input plugins.
+ * `elk_logstash_ssl_key` : SSL key used by input plugins.
 
 For other customizable variables, inspect `defaults/main.yml`
 
