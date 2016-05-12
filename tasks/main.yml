@@ -1,12 +1,15 @@
 ---
 - name: Include OS-specific variables
   include_vars: "{{ ansible_os_family }}.yml"
+  tags:
+    - always
 
 - name: Install common apt packages
   apt: pkg={{ item }} state=latest
   with_items: elk_common_packages
   sudo: yes
-
+  tags:
+    - always
 - name: Monit conf file
   copy:
     src=monitrc
@@ -29,6 +32,7 @@
 
 - name: Install Logstash
   include: logstash.yml
+  tags: logstash
 
 - name: Install Nginx
   include: nginx.yml

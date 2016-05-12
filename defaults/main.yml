@@ -8,20 +8,23 @@ elk_java:
     - openjdk-7-jre-headless
 
 elk_elasticsearch:
-  version: 1.7
+  version: 2.x
   pid_file: /var/run/elasticsearch/elasticsearch.pid
   http:
     port: 9200
 
-elk_logstash_version: 1.5
+elk_logstash_version: 2.3
 elk_logstash_pid_file: /var/run/logstash.pid
 elk_logstash_configs:
-    - { src: logstash-server.conf.j2, dest: server.conf }
+    - { src: logstash-server.conf.j2, dest: 01-server.conf }
+elk_logstash_extra_configs: []
 elk_logstash_patterns: [] # optional; follows same format as `configs`
 elk_logstash_lumberjack_enabled: yes
 elk_logstash_lumberjack_port: 4545
 elk_logstash_courier_enabled: yes
 elk_logstash_courier_port: 4546
+elk_logstash_beats_enabled: yes
+elk_logstash_beats_port: 5044
 elk_logstash_plugins: [] # optional
 elk_logstash_s3_enabled: no
 elk_logstash_s3_tokens: # required; when elk_logstash_s3_enabled: true

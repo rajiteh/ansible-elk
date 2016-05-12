@@ -22,6 +22,22 @@
   with_items: elk_logstash_configs
   sudo: yes
   notify: Restart logstash
+  tags:
+    - logstash_config
+
+- name: Logstash extra confs file
+  template:
+    src: logstash.confd.conf.j2
+    dest: /etc/logstash/conf.d/{{ item.name }}
+    owner: root
+    group: root
+    mode: 644
+  no_log: yes
+  with_items: elk_logstash_extra_configs
+  sudo: yes
+  notify: Restart logstash
+  tags:
+    - logstash_config
 
 - name: Logstash pattern files
   template:
@@ -40,23 +56,23 @@
   register: elk_logstash_installed_plugins
   changed_when: false
 
-- name: Configure log-courier
-  command: bin/plugin install {{ item }}
-  args:
-    chdir: "{{ elk_logstash_install_dir }}"
-  when: item not in elk_logstash_installed_plugins.stdout
-  with_items:
-    - logstash-output-zeromq
-    - logstash-input-courier
-  notify: Restart logstash
-
-- name: Logstash plugins
-  command: bin/plugin install {{ item }}
+- name: Configure plugins
+  command: bin/logstash-plugin install {{ item }}
   args:
     chdir: "{{ elk_logstash_install_dir }}"
   when: item not in elk_logstash_installed_plugins.stdout
   with_items: elk_logstash_plugins
   notify: Restart logstash
+
+- name: Update plugins
+  shell: yes | bin/logstash-plugin update {{ item }}
+  args:
+    chdir: "{{ elk_logstash_install_dir }}"
+  with_items: elk_logstash_plugins
+  register: elk_plugin_update_register
+  changed_when: "'No plugin updated' not in elk_plugin_update_register.stdout"
+  tags:
+    - update_plugins
 
 - name: Logstash SSL certificates
   template:
