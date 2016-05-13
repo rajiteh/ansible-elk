@@ -25,6 +25,15 @@
   tags:
     - logstash_config
 
+- name: Detect existing conf files
+  command: ls
+  args:
+    chdir: /etc/logstash/conf.d/
+  register: logstash_conf_list_register
+  changed_when: false
+  tags:
+    - logstash_config
+
 - name: Logstash extra confs file
   template:
     src: logstash.confd.conf.j2
@@ -36,6 +45,21 @@
   with_items: elk_logstash_extra_configs
   sudo: yes
   notify: Restart logstash
+  tags:
+    - logstash_config
+
+- name: Collect legit config file names
+  set_fact:
+    elk_logstash_valid_log_list: |
+      "{{ (elk_logstash_configs | map(attribute='dest') | list) }} +
+       {{ (elk_logstash_extra_configs | map(attribute='name') | list) }}"
+  tags:
+    - logstash_config
+
+- name: Delete extra configuration files
+  file: path=/etc/logstash/conf.d/{{ item }} state=absent
+  when: "item not in elk_logstash_valid_log_list"
+  with_items: logstash_conf_list_register.stdout_lines
   tags:
     - logstash_config
 
